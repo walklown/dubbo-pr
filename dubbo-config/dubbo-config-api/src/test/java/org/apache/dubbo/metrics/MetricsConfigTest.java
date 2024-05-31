@@ -14,9 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config;
+package org.apache.dubbo.metrics;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.config.nested.HistogramConfig;
 import org.apache.dubbo.config.nested.PrometheusConfig;
