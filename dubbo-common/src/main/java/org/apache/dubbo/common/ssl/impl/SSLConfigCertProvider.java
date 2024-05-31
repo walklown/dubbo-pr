@@ -26,6 +26,7 @@ import org.apache.dubbo.common.ssl.Cert;
 import org.apache.dubbo.common.ssl.CertProvider;
 import org.apache.dubbo.common.ssl.ProviderCert;
 import org.apache.dubbo.common.utils.IOUtils;
+import org.apache.dubbo.config.SslConfig;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -38,7 +39,7 @@ public class SSLConfigCertProvider implements CertProvider {
     public boolean isSupport(URL address) {
         return address.getOrDefaultApplicationModel()
                 .getApplicationConfigManager()
-                .getSsl()
+                .findConfig(SslConfig.class)
                 .isPresent();
     }
 
@@ -47,7 +48,7 @@ public class SSLConfigCertProvider implements CertProvider {
         return localAddress
                 .getOrDefaultApplicationModel()
                 .getApplicationConfigManager()
-                .getSsl()
+                .findConfig(SslConfig.class)
                 .filter(sslConfig -> Objects.nonNull(sslConfig.getServerKeyCertChainPath()))
                 .filter(sslConfig -> Objects.nonNull(sslConfig.getServerPrivateKeyPath()))
                 .map(sslConfig -> {
@@ -78,7 +79,7 @@ public class SSLConfigCertProvider implements CertProvider {
         return remoteAddress
                 .getOrDefaultApplicationModel()
                 .getApplicationConfigManager()
-                .getSsl()
+                .findConfig(SslConfig.class)
                 .filter(sslConfig -> Objects.nonNull(sslConfig.getClientKeyCertChainPath()))
                 .filter(sslConfig -> Objects.nonNull(sslConfig.getClientPrivateKeyPath()))
                 .map(sslConfig -> {

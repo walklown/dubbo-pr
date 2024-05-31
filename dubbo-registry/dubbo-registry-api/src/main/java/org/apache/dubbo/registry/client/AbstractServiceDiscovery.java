@@ -412,7 +412,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         }
         StringBuilder stringBuilder = new StringBuilder(128);
         Optional<ApplicationConfig> application =
-                applicationModel.getApplicationConfigManager().getApplication();
+                applicationModel.getApplicationConfigManager().findConfig(ApplicationConfig.class);
         if (application.isPresent()) {
             stringBuilder.append(application.get().getName());
             stringBuilder.append(".");

@@ -56,7 +56,7 @@ public class MethodMetric extends ServiceKeyMetric {
         if (applicationConfigManager == null) {
             return false;
         }
-        Optional<MetricsConfig> metrics = applicationConfigManager.getMetrics();
+        Optional<MetricsConfig> metrics = applicationConfigManager.findConfig(MetricsConfig.class);
         if (!metrics.isPresent()) {
             return false;
         }

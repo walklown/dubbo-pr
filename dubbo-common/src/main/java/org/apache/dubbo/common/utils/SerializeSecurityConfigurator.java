@@ -78,7 +78,7 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
 
     public void refreshCheck() {
         Optional<ApplicationConfig> applicationConfig =
-                moduleModel.getApplicationModel().getApplicationConfigManager().getApplication();
+                moduleModel.getApplicationModel().getApplicationConfigManager().findConfig(ApplicationConfig.class);
         autoTrustSerializeClass = applicationConfig
                 .map(ApplicationConfig::getAutoTrustSerializeClass)
                 .orElse(true);
@@ -183,7 +183,7 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
 
     public void refreshStatus() {
         Optional<ApplicationConfig> application =
-                moduleModel.getApplicationModel().getApplicationConfigManager().getApplication();
+                moduleModel.getApplicationModel().getApplicationConfigManager().findConfig(ApplicationConfig.class);
         String statusString =
                 application.map(ApplicationConfig::getSerializeCheckStatus).orElse(null);
         SerializeCheckStatus checkStatus = null;

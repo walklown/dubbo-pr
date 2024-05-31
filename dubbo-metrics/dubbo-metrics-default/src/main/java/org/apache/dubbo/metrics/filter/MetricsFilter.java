@@ -53,7 +53,7 @@ public class MetricsFilter implements ScopeModelAware {
         this.applicationModel = applicationModel;
         this.rpcMetricsEnable = applicationModel
                 .getApplicationConfigManager()
-                .getMetrics()
+                .findConfig(MetricsConfig.class)
                 .map(MetricsConfig::getEnableRpc)
                 .orElse(true);
         this.appName = applicationModel.tryGetApplicationName();

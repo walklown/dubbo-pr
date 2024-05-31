@@ -25,6 +25,7 @@ import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
+import org.apache.dubbo.config.ConfigScope;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.MetricsConfig;
@@ -37,18 +38,17 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfigBase;
 import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.config.TracingConfig;
+import org.apache.dubbo.config.annotation.DubboProperties;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
-import static java.util.Optional.ofNullable;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
-import static org.apache.dubbo.config.AbstractConfig.getTagName;
 
 /**
  * Manage configs of module
@@ -63,14 +63,7 @@ public class ModuleConfigManager extends AbstractConfigManager implements Module
     private final ConfigManager applicationConfigManager;
 
     public ModuleConfigManager(ModuleModel moduleModel) {
-        super(
-                moduleModel,
-                Arrays.asList(
-                        ModuleConfig.class,
-                        ServiceConfigBase.class,
-                        ReferenceConfigBase.class,
-                        ProviderConfig.class,
-                        ConsumerConfig.class));
+        super(moduleModel, ConfigScope.MODULE);
         applicationConfigManager = moduleModel.getApplicationModel().getApplicationConfigManager();
     }
 
@@ -82,7 +75,7 @@ public class ModuleConfigManager extends AbstractConfigManager implements Module
     }
 
     public Optional<ModuleConfig> getModule() {
-        return ofNullable(getSingleConfig(getTagName(ModuleConfig.class)));
+        return findConfig(ModuleConfig.class);
     }
 
     // ServiceConfig correlative methods
@@ -96,11 +89,11 @@ public class ModuleConfigManager extends AbstractConfigManager implements Module
     }
 
     public Collection<ServiceConfigBase> getServices() {
-        return getConfigs(getTagName(ServiceConfigBase.class));
+        return getRepeatableConfigs(ServiceConfigBase.class);
     }
 
     public <T> ServiceConfigBase<T> getService(String id) {
-        return getConfig(ServiceConfigBase.class, id).orElse(null);
+        return getConfig(ServiceConfigBase.class, id);
     }
 
     // ReferenceConfig correlative methods
@@ -114,11 +107,12 @@ public class ModuleConfigManager extends AbstractConfigManager implements Module
     }
 
     public Collection<ReferenceConfigBase<?>> getReferences() {
-        return getConfigs(getTagName(ReferenceConfigBase.class));
+        Collection<ReferenceConfigBase> configs = getRepeatableConfigs(ReferenceConfigBase.class);
+        return configs.stream().map(config -> (ReferenceConfigBase<?>) config).collect(Collectors.toList());
     }
 
     public <T> ReferenceConfigBase<T> getReference(String id) {
-        return getConfig(ReferenceConfigBase.class, id).orElse(null);
+        return getConfig(ReferenceConfigBase.class, id);
     }
 
     public void addProvider(ProviderConfig providerConfig) {
@@ -130,14 +124,14 @@ public class ModuleConfigManager extends AbstractConfigManager implements Module
     }
 
     public Optional<ProviderConfig> getProvider(String id) {
-        return getConfig(ProviderConfig.class, id);
+        return findConfig(ProviderConfig.class, id);
     }
 
     /**
      * Only allows one default ProviderConfig
      */
     public Optional<ProviderConfig> getDefaultProvider() {
-        List<ProviderConfig> providerConfigs = getDefaultConfigs(getConfigsMap(getTagName(ProviderConfig.class)));
+        List<ProviderConfig> providerConfigs = getDefaultConfigs(ProviderConfig.class);
         if (CollectionUtils.isNotEmpty(providerConfigs)) {
             return Optional.of(providerConfigs.get(0));
         }
@@ -145,7 +139,7 @@ public class ModuleConfigManager extends AbstractConfigManager implements Module
     }
 
     public Collection<ProviderConfig> getProviders() {
-        return getConfigs(getTagName(ProviderConfig.class));
+        return getRepeatableConfigs(ProviderConfig.class);
     }
 
     // ConsumerConfig correlative methods
@@ -159,14 +153,14 @@ public class ModuleConfigManager extends AbstractConfigManager implements Module
     }
 
     public Optional<ConsumerConfig> getConsumer(String id) {
-        return getConfig(ConsumerConfig.class, id);
+        return findConfig(ConsumerConfig.class, id);
     }
 
     /**
      * Only allows one default ConsumerConfig
      */
     public Optional<ConsumerConfig> getDefaultConsumer() {
-        List<ConsumerConfig> consumerConfigs = getDefaultConfigs(getConfigsMap(getTagName(ConsumerConfig.class)));
+        List<ConsumerConfig> consumerConfigs = getDefaultConfigs(ConsumerConfig.class);
         if (CollectionUtils.isNotEmpty(consumerConfigs)) {
             return Optional.of(consumerConfigs.get(0));
         }
@@ -174,7 +168,7 @@ public class ModuleConfigManager extends AbstractConfigManager implements Module
     }
 
     public Collection<ConsumerConfig> getConsumers() {
-        return getConfigs(getTagName(ConsumerConfig.class));
+        return getRepeatableConfigs(ConsumerConfig.class);
     }
 
     @Override
@@ -195,7 +189,8 @@ public class ModuleConfigManager extends AbstractConfigManager implements Module
     }
 
     @Override
-    protected <C extends AbstractConfig> Optional<C> findDuplicatedConfig(Map<String, C> configsMap, C config) {
+    protected <C extends AbstractConfig> Optional<C> findDuplicatedConfig(
+            DubboConfigWrapper<C> configWrapper, C config) {
         // check duplicated configs
         // special check service and reference config by unique service name, speed up the processing of large number of
         // instances
@@ -205,7 +200,7 @@ public class ModuleConfigManager extends AbstractConfigManager implements Module
                 return Optional.of(existedConfig);
             }
         } else {
-            return super.findDuplicatedConfig(configsMap, config);
+            return super.findDuplicatedConfig(configWrapper, config);
         }
         return Optional.empty();
     }
@@ -311,61 +306,87 @@ public class ModuleConfigManager extends AbstractConfigManager implements Module
         return applicationConfigManager;
     }
 
-    @Override
-    public <C extends AbstractConfig> Map<String, C> getConfigsMap(Class<C> cls) {
-        if (isSupportConfigType(cls)) {
-            return super.getConfigsMap(cls);
-        } else {
-            // redirect to application ConfigManager
-            return applicationConfigManager.getConfigsMap(cls);
-        }
+    public <C extends AbstractConfig> Map<String, C> getConfigsMap(Class<? extends C> cls) {
+        ConfigScope configScope = resolveConfigScope(cls);
+        return ConfigScope.APPLICATION.equals(configScope)
+                ? applicationConfigManager.getConfigsMap(cls)
+                : super.getConfigsMap(cls);
     }
 
     @Override
-    public <C extends AbstractConfig> Collection<C> getConfigs(Class<C> configType) {
-        if (isSupportConfigType(configType)) {
-            return super.getConfigs(configType);
-        } else {
-            return applicationConfigManager.getConfigs(configType);
-        }
+    public <T extends AbstractConfig> Optional<T> findConfig(Class<T> cls) {
+        ConfigScope configScope = resolveConfigScope(cls);
+        return ConfigScope.APPLICATION.equals(configScope)
+                ? applicationConfigManager.findConfig(cls)
+                : super.findConfig(cls);
     }
 
     @Override
-    public <T extends AbstractConfig> Optional<T> getConfig(Class<T> cls, String idOrName) {
-        if (isSupportConfigType(cls)) {
-            return super.getConfig(cls, idOrName);
-        } else {
-            return applicationConfigManager.getConfig(cls, idOrName);
-        }
+    public <C extends AbstractConfig> C getConfig(Class<? extends C> cls) {
+        ConfigScope configScope = resolveConfigScope(cls);
+        return ConfigScope.APPLICATION.equals(configScope)
+                ? applicationConfigManager.getConfig(cls)
+                : super.getConfig(cls);
+    }
+
+    @Override
+    public <C extends AbstractConfig> Collection<C> getRepeatableConfigs(Class<? extends C> cls) {
+        ConfigScope configScope = resolveConfigScope(cls);
+        return ConfigScope.APPLICATION.equals(configScope)
+                ? applicationConfigManager.getRepeatableConfigs(cls)
+                : super.getRepeatableConfigs(cls);
+    }
+
+    @Override
+    public <C extends AbstractConfig> Optional<C> findConfig(Class<? extends C> cls, String idOrName) {
+        ConfigScope configScope = resolveConfigScope(cls);
+        return ConfigScope.APPLICATION.equals(configScope)
+                ? applicationConfigManager.findConfig(cls, idOrName)
+                : super.findConfig(cls, idOrName);
+    }
+
+    @Override
+    public <C extends AbstractConfig> C getConfig(Class<? extends C> cls, String idOrName) {
+        ConfigScope configScope = resolveConfigScope(cls);
+        return ConfigScope.APPLICATION.equals(configScope)
+                ? applicationConfigManager.getConfig(cls, idOrName)
+                : super.getConfig(cls, idOrName);
     }
 
     @Override
     public <C extends AbstractConfig> List<C> getDefaultConfigs(Class<C> cls) {
-        if (isSupportConfigType(cls)) {
-            return super.getDefaultConfigs(cls);
-        } else {
-            return applicationConfigManager.getDefaultConfigs(cls);
+        ConfigScope configScope = resolveConfigScope(cls);
+        return ConfigScope.APPLICATION.equals(configScope)
+                ? applicationConfigManager.getDefaultConfigs(cls)
+                : super.getDefaultConfigs(cls);
+    }
+
+    private static ConfigScope resolveConfigScope(Class<?> uniqueConfigClass) {
+        DubboProperties dubboProperties = uniqueConfigClass.getAnnotation(DubboProperties.class);
+        if (dubboProperties == null) {
+            throw new IllegalArgumentException("Unsupported config type: " + uniqueConfigClass);
         }
+        return dubboProperties.configScope();
     }
 
     public Optional<ApplicationConfig> getApplication() {
-        return applicationConfigManager.getApplication();
+        return applicationConfigManager.findConfig(ApplicationConfig.class);
     }
 
     public Optional<MonitorConfig> getMonitor() {
-        return applicationConfigManager.getMonitor();
+        return applicationConfigManager.findConfig(MonitorConfig.class);
     }
 
     public Optional<MetricsConfig> getMetrics() {
-        return applicationConfigManager.getMetrics();
+        return applicationConfigManager.findConfig(MetricsConfig.class);
     }
 
     public Optional<TracingConfig> getTracing() {
-        return applicationConfigManager.getTracing();
+        return applicationConfigManager.findConfig(TracingConfig.class);
     }
 
     public Optional<SslConfig> getSsl() {
-        return applicationConfigManager.getSsl();
+        return applicationConfigManager.findConfig(SslConfig.class);
     }
 
     public Optional<Collection<ConfigCenterConfig>> getDefaultConfigCenter() {
@@ -373,42 +394,42 @@ public class ModuleConfigManager extends AbstractConfigManager implements Module
     }
 
     public Optional<ConfigCenterConfig> getConfigCenter(String id) {
-        return applicationConfigManager.getConfigCenter(id);
+        return applicationConfigManager.findConfig(ConfigCenterConfig.class, id);
     }
 
     public Collection<ConfigCenterConfig> getConfigCenters() {
-        return applicationConfigManager.getConfigCenters();
+        return applicationConfigManager.getRepeatableConfigs(ConfigCenterConfig.class);
     }
 
     public Collection<MetadataReportConfig> getMetadataConfigs() {
-        return applicationConfigManager.getMetadataConfigs();
+        return applicationConfigManager.getRepeatableConfigs(MetadataReportConfig.class);
     }
 
     public Collection<MetadataReportConfig> getDefaultMetadataConfigs() {
-        return applicationConfigManager.getDefaultMetadataConfigs();
+        return applicationConfigManager.getDefaultConfigs(MetadataReportConfig.class);
     }
 
     public Optional<ProtocolConfig> getProtocol(String idOrName) {
-        return applicationConfigManager.getProtocol(idOrName);
+        return applicationConfigManager.findConfig(ProtocolConfig.class, idOrName);
     }
 
     public List<ProtocolConfig> getDefaultProtocols() {
-        return applicationConfigManager.getDefaultProtocols();
+        return applicationConfigManager.getDefaultConfigs(ProtocolConfig.class);
     }
 
     public Collection<ProtocolConfig> getProtocols() {
-        return applicationConfigManager.getProtocols();
+        return applicationConfigManager.getRepeatableConfigs(ProtocolConfig.class);
     }
 
     public Optional<RegistryConfig> getRegistry(String id) {
-        return applicationConfigManager.getRegistry(id);
+        return applicationConfigManager.findConfig(RegistryConfig.class, id);
     }
 
     public List<RegistryConfig> getDefaultRegistries() {
-        return applicationConfigManager.getDefaultRegistries();
+        return applicationConfigManager.getDefaultConfigs(RegistryConfig.class);
     }
 
     public Collection<RegistryConfig> getRegistries() {
-        return applicationConfigManager.getRegistries();
+        return applicationConfigManager.getRepeatableConfigs(RegistryConfig.class);
     }
 }

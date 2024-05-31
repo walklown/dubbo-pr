@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.config.annotation.DubboProperties;
 import org.apache.dubbo.config.nested.BaggageConfig;
 import org.apache.dubbo.config.nested.ExporterConfig;
 import org.apache.dubbo.config.nested.PropagationConfig;
@@ -26,7 +27,8 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 /**
  * Configuration for tracing.
  */
-public class TracingConfig extends AbstractConfig {
+@DubboProperties(configScope = ConfigScope.APPLICATION)
+public class TracingConfig extends AbstractConfig implements DubboApplicationConfig {
 
     private static final long serialVersionUID = -9089919311611546383L;
 

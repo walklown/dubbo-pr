@@ -1,0 +1,9 @@
+application-config=org.apache.dubbo.config.ApplicationConfig
+metrics-config=org.apache.dubbo.config.MetricsConfig
+monitor-config=org.apache.dubbo.config.MonitorConfig
+ssl-config=org.apache.dubbo.config.SslConfig
+tracing-config=org.apache.dubbo.config.TracingConfig
+config-center-config=org.apache.dubbo.config.ConfigCenterConfig
+meta-date-report-config=org.apache.dubbo.config.MetadataReportConfig
+protocol-config=org.apache.dubbo.config.ProtocolConfig
+registry-config=org.apache.dubbo.config.RegistryConfig

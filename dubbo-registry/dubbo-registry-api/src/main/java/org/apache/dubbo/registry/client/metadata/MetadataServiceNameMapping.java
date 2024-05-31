@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.metadata.AbstractServiceNameMapping;
 import org.apache.dubbo.metadata.MappingListener;
 import org.apache.dubbo.metadata.MetadataService;
@@ -69,7 +70,7 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
     @Override
     public boolean hasValidMetadataCenter() {
         return !CollectionUtils.isEmpty(
-                applicationModel.getApplicationConfigManager().getMetadataConfigs());
+                applicationModel.getApplicationConfigManager().getRepeatableConfigs(MetadataReportConfig.class));
     }
 
     /**
@@ -78,7 +79,7 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
     @Override
     public boolean map(URL url) {
         if (CollectionUtils.isEmpty(
-                applicationModel.getApplicationConfigManager().getMetadataConfigs())) {
+                applicationModel.getApplicationConfigManager().getRepeatableConfigs(MetadataReportConfig.class))) {
             logger.warn(
                     COMMON_PROPERTY_TYPE_MISMATCH, "", "", "No valid metadata config center found for mapping report.");
             return false;

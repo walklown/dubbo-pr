@@ -278,15 +278,15 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         useRegistryAsConfigCenterIfNecessary();
 
         // check Config Center
-        Collection<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
+        Collection<ConfigCenterConfig> configCenters = configManager.getRepeatableConfigs(ConfigCenterConfig.class);
         if (CollectionUtils.isEmpty(configCenters)) {
             ConfigCenterConfig configCenterConfig = new ConfigCenterConfig();
             configCenterConfig.setScopeModel(applicationModel);
             configCenterConfig.refresh();
             ConfigValidationUtils.validateConfigCenterConfig(configCenterConfig);
             if (configCenterConfig.isValid()) {
-                configManager.addConfigCenter(configCenterConfig);
-                configCenters = configManager.getConfigCenters();
+                configManager.addConfig(configCenterConfig);
+                configCenters = configManager.getRepeatableConfigs(ConfigCenterConfig.class);
             }
         } else {
             for (ConfigCenterConfig configCenterConfig : configCenters) {
@@ -317,7 +317,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
         String metadataType = applicationConfig.getMetadataType();
         // FIXME, multiple metadata config support.
-        Collection<MetadataReportConfig> metadataReportConfigs = configManager.getMetadataConfigs();
+        Collection<MetadataReportConfig> metadataReportConfigs =
+                configManager.getRepeatableConfigs(MetadataReportConfig.class);
         if (CollectionUtils.isEmpty(metadataReportConfigs)) {
             if (REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
                 throw new IllegalStateException(
@@ -353,23 +354,23 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             return;
         }
 
-        if (CollectionUtils.isNotEmpty(configManager.getConfigCenters())) {
+        if (CollectionUtils.isNotEmpty(configManager.getRepeatableConfigs(ConfigCenterConfig.class))) {
             return;
         }
 
         // load registry
         configManager.loadConfigsOfTypeFromProps(RegistryConfig.class);
 
-        List<RegistryConfig> defaultRegistries = configManager.getDefaultRegistries();
+        List<RegistryConfig> defaultRegistries = configManager.getDefaultConfigs(RegistryConfig.class);
         if (!defaultRegistries.isEmpty()) {
             defaultRegistries.stream()
                     .filter(this::isUsedRegistryAsConfigCenter)
                     .map(this::registryAsConfigCenter)
                     .forEach(configCenter -> {
-                        if (configManager.getConfigCenter(configCenter.getId()).isPresent()) {
+                        if (configManager.getConfig(ConfigCenterConfig.class, configCenter.getId()) != null) {
                             return;
                         }
-                        configManager.addConfigCenter(configCenter);
+                        configManager.addConfig(configCenter);
                         logger.info("use registry as config-center: " + configCenter);
                     });
         }
@@ -386,7 +387,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             return;
         }
         DefaultMetricsCollector collector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
-        Optional<MetricsConfig> configOptional = configManager.getMetrics();
+        Optional<MetricsConfig> configOptional = configManager.findConfig(MetricsConfig.class);
         // If no specific metrics type is configured and there is no Prometheus dependency in the dependencies.
         MetricsConfig metricsConfig = configOptional.orElse(new MetricsConfig(applicationModel));
         if (PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol()) && !MetricsSupportUtil.isSupportPrometheus()) {
@@ -445,7 +446,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             }
             return;
         }
-        Optional<TracingConfig> configOptional = configManager.getTracing();
+        Optional<TracingConfig> configOptional = configManager.findConfig(TracingConfig.class);
         if (!configOptional.isPresent() || !configOptional.get().getEnabled()) {
             return;
         }
@@ -493,7 +494,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private void useRegistryAsMetadataCenterIfNecessary() {
 
-        Collection<MetadataReportConfig> originMetadataConfigs = configManager.getMetadataConfigs();
+        Collection<MetadataReportConfig> originMetadataConfigs =
+                configManager.getRepeatableConfigs(MetadataReportConfig.class);
         if (originMetadataConfigs.stream().anyMatch(m -> Objects.nonNull(m.getAddress()))) {
             return;
         }
@@ -509,7 +511,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         MetadataReportConfig metadataConfigToOverride =
                 metadataConfigsToOverride.stream().findFirst().orElse(null);
 
-        List<RegistryConfig> defaultRegistries = configManager.getDefaultRegistries();
+        List<RegistryConfig> defaultRegistries = configManager.getDefaultConfigs(RegistryConfig.class);
         if (!defaultRegistries.isEmpty()) {
             defaultRegistries.stream()
                     .filter(this::isUsedRegistryAsMetadataCenter)
@@ -522,7 +524,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private void overrideMetadataReportConfig(
             MetadataReportConfig metadataConfigToOverride, MetadataReportConfig metadataReportConfig) {
         if (metadataReportConfig.getId() == null) {
-            Collection<MetadataReportConfig> metadataReportConfigs = configManager.getMetadataConfigs();
+            Collection<MetadataReportConfig> metadataReportConfigs =
+                    configManager.getRepeatableConfigs(MetadataReportConfig.class);
             if (CollectionUtils.isNotEmpty(metadataReportConfigs)) {
                 for (MetadataReportConfig existedConfig : metadataReportConfigs) {
                     if (existedConfig.getId() == null
@@ -532,15 +535,15 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 }
             }
             configManager.removeConfig(metadataConfigToOverride);
-            configManager.addMetadataReport(metadataReportConfig);
+            configManager.addConfig(metadataReportConfig);
         } else {
             Optional<MetadataReportConfig> configOptional =
-                    configManager.getConfig(MetadataReportConfig.class, metadataReportConfig.getId());
+                    configManager.findConfig(MetadataReportConfig.class, metadataReportConfig.getId());
             if (configOptional.isPresent()) {
                 return;
             }
             configManager.removeConfig(metadataConfigToOverride);
-            configManager.addMetadataReport(metadataReportConfig);
+            configManager.addConfig(metadataReportConfig);
         }
         logger.info("use registry as metadata-center: " + metadataReportConfig);
     }
@@ -835,7 +838,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private void exportMetricsService() {
         boolean exportMetrics = applicationModel
                 .getApplicationConfigManager()
-                .getMetrics()
+                .findConfig(MetricsConfig.class)
                 .map(MetricsConfig::getExportMetricsService)
                 .orElse(true);
         if (exportMetrics) {
@@ -1453,6 +1456,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private Optional<ApplicationConfig> getApplication() {
-        return configManager.getApplication();
+        return configManager.findConfig(ApplicationConfig.class);
     }
 }

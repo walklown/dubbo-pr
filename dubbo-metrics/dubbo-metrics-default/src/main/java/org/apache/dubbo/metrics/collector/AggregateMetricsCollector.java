@@ -86,7 +86,7 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
         ConfigManager configManager = applicationModel.getApplicationConfigManager();
         if (isCollectEnabled()) {
             // only registered when aggregation is enabled.
-            Optional<MetricsConfig> optional = configManager.getMetrics();
+            Optional<MetricsConfig> optional = configManager.findConfig(MetricsConfig.class);
             if (optional.isPresent()) {
                 registerListener();
                 AggregationConfig aggregation = optional.get().getAggregation();
@@ -117,7 +117,7 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
         if (collectEnabled == null) {
             ConfigManager configManager = applicationModel.getApplicationConfigManager();
             configManager
-                    .getMetrics()
+                    .findConfig(MetricsConfig.class)
                     .ifPresent(metricsConfig ->
                             setCollectEnabled(metricsConfig.getAggregation().getEnabled()));
         }

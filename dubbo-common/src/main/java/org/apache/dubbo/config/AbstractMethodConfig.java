@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.config.annotation.DubboProperties;
 import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -32,6 +33,7 @@ import java.util.Optional;
  *
  * @export
  */
+@DubboProperties(configScope = ConfigScope.MODULE, required = true, repeatable = true)
 public abstract class AbstractMethodConfig extends AbstractConfig {
 
     private static final long serialVersionUID = 5809761483000878437L;

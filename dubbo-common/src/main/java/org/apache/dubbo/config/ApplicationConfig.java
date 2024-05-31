@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.annotation.DubboProperties;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -79,7 +80,8 @@ import static org.apache.dubbo.config.Constants.TEST_ENVIRONMENT;
  *
  * @export
  */
-public class ApplicationConfig extends AbstractConfig {
+@DubboProperties(configScope = ConfigScope.APPLICATION, required = true)
+public class ApplicationConfig extends AbstractConfig implements DubboApplicationConfig {
 
     private static final long serialVersionUID = 5508512956753757169L;
 

@@ -229,7 +229,9 @@ public class ApplicationModel extends ScopeModel {
     }
 
     public boolean NotExistApplicationConfig() {
-        return !getApplicationConfigManager().getApplication().isPresent();
+        return !getApplicationConfigManager()
+                .findConfig(ApplicationConfig.class)
+                .isPresent();
     }
 
     public ApplicationConfig getCurrentConfig() {
@@ -242,7 +244,7 @@ public class ApplicationModel extends ScopeModel {
 
     public String tryGetApplicationName() {
         Optional<ApplicationConfig> appCfgOptional =
-                getApplicationConfigManager().getApplication();
+                getApplicationConfigManager().findConfig(ApplicationConfig.class);
         return appCfgOptional.isPresent() ? appCfgOptional.get().getName() : null;
     }
 

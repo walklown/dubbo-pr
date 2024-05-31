@@ -79,8 +79,8 @@ class InitServiceMetricsTest {
         aggregationConfig.setTimeWindowSeconds(120);
         metricsConfig.setAggregation(aggregationConfig);
 
-        applicationModel.getApplicationConfigManager().setMetrics(metricsConfig);
-        applicationModel.getApplicationConfigManager().setApplication(config);
+        applicationModel.getApplicationConfigManager().addConfig(metricsConfig);
+        applicationModel.getApplicationConfigManager().addConfig(config);
 
         defaultCollector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
         defaultCollector.setCollectEnabled(true);

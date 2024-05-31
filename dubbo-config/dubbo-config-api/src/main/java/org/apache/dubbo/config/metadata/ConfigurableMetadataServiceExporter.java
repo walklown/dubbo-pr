@@ -105,7 +105,7 @@ public class ConfigurableMetadataServiceExporter {
     }
 
     private ApplicationConfig getApplicationConfig() {
-        return applicationModel.getApplicationConfigManager().getApplication().get();
+        return applicationModel.getApplicationConfigManager().getConfig(ApplicationConfig.class);
     }
 
     /**

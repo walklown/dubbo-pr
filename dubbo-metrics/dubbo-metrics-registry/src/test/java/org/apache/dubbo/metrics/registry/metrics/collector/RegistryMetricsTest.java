@@ -334,7 +334,7 @@ public class RegistryMetricsTest {
         MetricsConfig metricsConfig = spy(new MetricsConfig());
 
         configManager.setApplication(applicationConfig);
-        configManager.setMetrics(metricsConfig);
+        configManager.addConfig(metricsConfig);
 
         when(metricsConfig.getAggregation()).thenReturn(new AggregationConfig());
         when(applicationModel.getApplicationConfigManager()).thenReturn(configManager);

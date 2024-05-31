@@ -18,6 +18,7 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.annotation.DubboProperties;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -28,7 +29,8 @@ import java.util.Map;
  *
  * @export
  */
-public class MonitorConfig extends AbstractConfig {
+@DubboProperties(configScope = ConfigScope.APPLICATION)
+public class MonitorConfig extends AbstractConfig implements DubboApplicationConfig {
 
     private static final long serialVersionUID = -1184681514659198203L;
 

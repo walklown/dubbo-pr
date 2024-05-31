@@ -26,13 +26,11 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
+import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
-import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.ModuleConfig;
-import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ReferenceConfig;
@@ -387,7 +385,7 @@ public final class DubboBootstrap {
     }
 
     public DubboBootstrap metadataReport(MetadataReportConfig metadataReportConfig) {
-        configManager.addMetadataReport(metadataReportConfig);
+        configManager.addConfig(metadataReportConfig);
         return this;
     }
 
@@ -396,7 +394,7 @@ public final class DubboBootstrap {
             return this;
         }
 
-        configManager.addMetadataReports(metadataReportConfigs);
+        configManager.addConfigs(metadataReportConfigs);
         return this;
     }
 
@@ -435,7 +433,7 @@ public final class DubboBootstrap {
      */
     public DubboBootstrap application(ApplicationConfig applicationConfig) {
         applicationConfig.setScopeModel(applicationModel);
-        configManager.setApplication(applicationConfig);
+        configManager.addConfig(applicationConfig);
         return this;
     }
 
@@ -472,7 +470,7 @@ public final class DubboBootstrap {
      */
     public DubboBootstrap registry(RegistryConfig registryConfig) {
         registryConfig.setScopeModel(applicationModel);
-        configManager.addRegistry(registryConfig);
+        configManager.addConfig(registryConfig);
         return this;
     }
 
@@ -511,7 +509,7 @@ public final class DubboBootstrap {
         }
         for (ProtocolConfig protocolConfig : protocolConfigs) {
             protocolConfig.setScopeModel(applicationModel);
-            configManager.addProtocol(protocolConfig);
+            configManager.addConfig(protocolConfig);
         }
         return this;
     }
@@ -665,6 +663,14 @@ public final class DubboBootstrap {
     }
     // module configs end
 
+    public DubboBootstrap config(AbstractConfig... configs) {
+        for (AbstractConfig config : configs) {
+            config.setScopeModel(applicationModel);
+            configManager.addConfig(config);
+        }
+        return this;
+    }
+
     // {@link ConfigCenterConfig} correlative methods
     public DubboBootstrap configCenter(Consumer<ConfigCenterBuilder> consumerBuilder) {
         return configCenter(null, consumerBuilder);
@@ -676,44 +682,34 @@ public final class DubboBootstrap {
         return this;
     }
 
-    public DubboBootstrap configCenter(ConfigCenterConfig configCenterConfig) {
-        configCenterConfig.setScopeModel(applicationModel);
-        configManager.addConfigCenter(configCenterConfig);
-        return this;
+    @Deprecated
+    public DubboBootstrap configCenter(AbstractConfig configCenterConfig) {
+        return config(configCenterConfig);
     }
 
-    public DubboBootstrap configCenters(List<ConfigCenterConfig> configCenterConfigs) {
-        if (CollectionUtils.isEmpty(configCenterConfigs)) {
-            return this;
-        }
-        for (ConfigCenterConfig configCenterConfig : configCenterConfigs) {
-            this.configCenter(configCenterConfig);
-        }
-        return this;
+    @Deprecated
+    public DubboBootstrap configCenters(List<AbstractConfig> configCenterConfigs) {
+        return config(configCenterConfigs.toArray(new AbstractConfig[] {}));
     }
 
-    public DubboBootstrap monitor(MonitorConfig monitor) {
-        monitor.setScopeModel(applicationModel);
-        configManager.setMonitor(monitor);
-        return this;
+    @Deprecated
+    public DubboBootstrap monitor(AbstractConfig monitor) {
+        return config(monitor);
     }
 
-    public DubboBootstrap metrics(MetricsConfig metrics) {
-        metrics.setScopeModel(applicationModel);
-        configManager.setMetrics(metrics);
-        return this;
+    @Deprecated
+    public DubboBootstrap metrics(AbstractConfig metrics) {
+        return config(metrics);
     }
 
+    @Deprecated
     public DubboBootstrap tracing(TracingConfig tracing) {
-        tracing.setScopeModel(applicationModel);
-        configManager.setTracing(tracing);
-        return this;
+        return config(tracing);
     }
 
+    @Deprecated
     public DubboBootstrap ssl(SslConfig sslConfig) {
-        sslConfig.setScopeModel(applicationModel);
-        configManager.setSsl(sslConfig);
-        return this;
+        return config(sslConfig);
     }
 
     /* serve for builder apis, begin */

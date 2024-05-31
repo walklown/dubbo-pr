@@ -90,7 +90,7 @@ class MethodMetricTest {
     @Test
     void testServiceMetrics() {
         MetricsConfig metricConfig = new MetricsConfig();
-        applicationModel.getApplicationConfigManager().setMetrics(metricConfig);
+        applicationModel.getApplicationConfigManager().addConfig(metricConfig);
         metricConfig.setRpcLevel(MetricsLevel.SERVICE.name());
         MethodMetric metric =
                 new MethodMetric(applicationModel, invocation, MethodMetric.isServiceLevel(applicationModel));

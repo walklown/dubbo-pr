@@ -367,7 +367,7 @@ class ConfigManagerTest {
         registryConfig.setId("registryID_1");
         configManager.addRegistry(registryConfig);
         Optional<RegistryConfig> registryConfigOptional =
-                configManager.getConfig(RegistryConfig.class, registryConfig.getId());
+                configManager.findConfig(RegistryConfig.class, registryConfig.getId());
 
         if (registryConfigOptional.isPresent()) {
             Assertions.assertEquals(registryConfigOptional.get(), registryConfig);
@@ -378,7 +378,7 @@ class ConfigManagerTest {
         ProtocolConfig protocolConfig = new ProtocolConfig("dubbo");
         configManager.addProtocol(protocolConfig);
         Optional<ProtocolConfig> protocolConfigOptional =
-                configManager.getConfig(ProtocolConfig.class, protocolConfig.getName());
+                configManager.findConfig(ProtocolConfig.class, protocolConfig.getName());
 
         if (protocolConfigOptional.isPresent()) {
             Assertions.assertEquals(protocolConfigOptional.get(), protocolConfig);
@@ -406,10 +406,10 @@ class ConfigManagerTest {
         moduleConfig.setId("moduleID_1");
         moduleConfigManager.setModule(moduleConfig);
         Optional<ModuleConfig> moduleConfigOptional =
-                moduleConfigManager.getConfig(ModuleConfig.class, moduleConfig.getId());
+                moduleConfigManager.findConfig(ModuleConfig.class, moduleConfig.getId());
         Assertions.assertEquals(moduleConfig, moduleConfigOptional.get());
 
-        Optional<RegistryConfig> config = moduleConfigManager.getConfig(RegistryConfig.class, registryConfig.getId());
+        Optional<RegistryConfig> config = moduleConfigManager.findConfig(RegistryConfig.class, registryConfig.getId());
         Assertions.assertEquals(config.get(), registryConfig);
     }
 

@@ -43,7 +43,7 @@ public class Startup implements BaseCommand {
     public String execute(CommandContext commandContext, String[] args) {
         String config = frameworkModel.getApplicationModels().stream()
                 .map(applicationModel ->
-                        applicationModel.getApplicationConfigManager().getApplication())
+                        applicationModel.getApplicationConfigManager().findConfig(ApplicationConfig.class))
                 .map(o -> o.orElse(null))
                 .filter(Objects::nonNull)
                 .map(ApplicationConfig::getStartupProbe)

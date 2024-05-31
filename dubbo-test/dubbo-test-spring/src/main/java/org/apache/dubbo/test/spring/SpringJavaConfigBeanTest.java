@@ -92,14 +92,17 @@ public class SpringJavaConfigBeanTest {
 
             ApplicationModel applicationModel = consumerContext.getBean(ApplicationModel.class);
             ConfigManager configManager = consumerContext.getBean(ConfigManager.class);
-            ApplicationConfig application = configManager.getApplication().get();
+            ApplicationConfig application =
+                    configManager.findConfig(ApplicationConfig.class).get();
             Assertions.assertEquals(false, application.getQosEnable());
             Assertions.assertEquals("Tom", application.getOwner());
 
-            RegistryConfig registry = configManager.getRegistry(MY_REGISTRY_ID).get();
+            RegistryConfig registry = configManager
+                    .findConfig(RegistryConfig.class, MY_REGISTRY_ID)
+                    .get();
             Assertions.assertEquals(registryAddress, registry.getAddress());
 
-            Collection<ProtocolConfig> protocols = configManager.getProtocols();
+            Collection<ProtocolConfig> protocols = configManager.getRepeatableConfigs(ProtocolConfig.class);
             Assertions.assertEquals(1, protocols.size());
             ProtocolConfig protocolConfig = protocols.iterator().next();
             Assertions.assertEquals("dubbo", protocolConfig.getName());

@@ -950,7 +950,7 @@ public class ExtensionLoader<T> {
         return getExtensionClasses().get(name);
     }
 
-    private Map<String, Class<?>> getExtensionClasses() {
+    public Map<String, Class<?>> getExtensionClasses() {
         Map<String, Class<?>> classes = cachedClasses.get();
         if (classes == null) {
             loadExtensionClassesLock.lock();

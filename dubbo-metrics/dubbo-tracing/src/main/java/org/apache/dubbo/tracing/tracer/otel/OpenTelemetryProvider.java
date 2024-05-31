@@ -74,7 +74,7 @@ public class OpenTelemetryProvider implements TracerProvider {
 
         String applicationName = applicationModel
                 .getApplicationConfigManager()
-                .getApplication()
+                .findConfig(ApplicationConfig.class)
                 .map(ApplicationConfig::getName)
                 .orElse(DEFAULT_APPLICATION_NAME);
 

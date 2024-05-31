@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.utils.IOUtils;
+import org.apache.dubbo.config.annotation.DubboProperties;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -29,7 +30,8 @@ import java.io.InputStream;
  *
  * @export
  */
-public class SslConfig extends AbstractConfig {
+@DubboProperties(configScope = ConfigScope.APPLICATION, required = true)
+public class SslConfig extends AbstractConfig implements DubboApplicationConfig {
 
     private static final long serialVersionUID = 4072725016922915851L;
 

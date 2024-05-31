@@ -17,6 +17,7 @@
 package org.apache.dubbo.security.cert;
 
 import org.apache.dubbo.common.deploy.ApplicationDeployListener;
+import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -34,7 +35,7 @@ public class CertDeployerListener implements ApplicationDeployListener {
 
     @Override
     public void onStarting(ApplicationModel scopeModel) {
-        scopeModel.getApplicationConfigManager().getSsl().ifPresent(sslConfig -> {
+        scopeModel.getApplicationConfigManager().findConfig(SslConfig.class).ifPresent(sslConfig -> {
             if (Objects.nonNull(sslConfig.getCaAddress()) && dubboCertManager != null) {
                 CertConfig certConfig = new CertConfig(
                         sslConfig.getCaAddress(),

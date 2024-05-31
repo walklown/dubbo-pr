@@ -588,7 +588,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         getScopeModel()
                 .getConfigManager()
-                .getProtocol(TRIPLE)
+                .findConfig(ProtocolConfig.class, TRIPLE)
                 .orElseThrow(() -> new IllegalStateException("In mesh mode, a triple protocol must be specified"));
 
         String providedBy = referenceParameters.get(PROVIDED_BY);

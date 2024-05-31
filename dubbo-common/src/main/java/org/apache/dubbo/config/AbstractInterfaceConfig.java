@@ -490,7 +490,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         computeValidRegistryIds();
         if (StringUtils.isEmpty(registryIds)) {
             if (CollectionUtils.isEmpty(registries)) {
-                List<RegistryConfig> registryConfigs = getConfigManager().getDefaultRegistries();
+                List<RegistryConfig> registryConfigs = getConfigManager().getDefaultConfigs(RegistryConfig.class);
                 registryConfigs = new ArrayList<>(registryConfigs);
                 setRegistries(registryConfigs);
             }
@@ -499,7 +499,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             List<RegistryConfig> tmpRegistries = new ArrayList<>();
             Arrays.stream(ids).forEach(id -> {
                 if (tmpRegistries.stream().noneMatch(reg -> reg.getId().equals(id))) {
-                    Optional<RegistryConfig> globalRegistry = getConfigManager().getRegistry(id);
+                    Optional<RegistryConfig> globalRegistry = getConfigManager().findConfig(RegistryConfig.class, id);
                     if (globalRegistry.isPresent()) {
                         tmpRegistries.add(globalRegistry.get());
                     } else {
@@ -681,7 +681,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     public void setApplication(ApplicationConfig application) {
         this.application = application;
         if (application != null) {
-            getConfigManager().setApplication(application);
+            getConfigManager().addConfig(application);
         }
     }
 
@@ -766,11 +766,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             return monitor;
         }
         // FIXME: instead of return null, we should set default monitor when getMonitor() return null in ConfigManager
-        return getConfigManager().getMonitor().orElse(null);
+        return getConfigManager().getConfig(MonitorConfig.class);
     }
 
     /**
-     * @deprecated Use {@link org.apache.dubbo.config.context.ConfigManager#setMonitor(MonitorConfig)}
+     * @deprecated Use {@link org.apache.dubbo.config.context.ConfigManager#addConfig(AbstractConfig)}
      */
     @Deprecated
     public void setMonitor(String monitor) {
@@ -778,13 +778,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     /**
-     * @deprecated Use {@link org.apache.dubbo.config.context.ConfigManager#setMonitor(MonitorConfig)}
+     * @deprecated Use {@link org.apache.dubbo.config.context.ConfigManager#addConfig(AbstractConfig)}
      */
     @Deprecated
     public void setMonitor(MonitorConfig monitor) {
         this.monitor = monitor;
         if (monitor != null) {
-            getConfigManager().setMonitor(monitor);
+            getConfigManager().addConfig(monitor);
         }
     }
 
@@ -797,14 +797,15 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     /**
-     * @deprecated Use {@link org.apache.dubbo.config.context.ConfigManager#getConfigCenter(String)}
+     * @deprecated Use {@link org.apache.dubbo.config.context.ConfigManager#getConfig(Class, String)}
      */
     @Deprecated
     public ConfigCenterConfig getConfigCenter() {
         if (configCenter != null) {
             return configCenter;
         }
-        Collection<ConfigCenterConfig> configCenterConfigs = getConfigManager().getConfigCenters();
+        Collection<ConfigCenterConfig> configCenterConfigs =
+                getConfigManager().getRepeatableConfigs(ConfigCenterConfig.class);
         if (CollectionUtils.isNotEmpty(configCenterConfigs)) {
             return configCenterConfigs.iterator().next();
         }
@@ -812,13 +813,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     /**
-     * @deprecated Use {@link org.apache.dubbo.config.context.ConfigManager#addConfigCenter(ConfigCenterConfig)}
+     * @deprecated Use {@link org.apache.dubbo.config.context.ConfigManager#addConfig(AbstractConfig)}
      */
     @Deprecated
     public void setConfigCenter(ConfigCenterConfig configCenter) {
         this.configCenter = configCenter;
         if (configCenter != null) {
-            getConfigManager().addConfigCenter(configCenter);
+            getConfigManager().addConfig(configCenter);
         }
     }
 
@@ -855,7 +856,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     /**
-     * @deprecated Use {@link org.apache.dubbo.config.context.ConfigManager#getMetadataConfigs()}
+     * @deprecated Use {@link org.apache.dubbo.config.context.ConfigManager#getRepeatableConfigs(Class)}
      */
     @Deprecated
     public MetadataReportConfig getMetadataReportConfig() {
@@ -863,7 +864,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             return metadataReportConfig;
         }
         Collection<MetadataReportConfig> metadataReportConfigs =
-                getConfigManager().getMetadataConfigs();
+                getConfigManager().getRepeatableConfigs(MetadataReportConfig.class);
         if (CollectionUtils.isNotEmpty(metadataReportConfigs)) {
             return metadataReportConfigs.iterator().next();
         }
@@ -871,13 +872,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     /**
-     * @deprecated Use {@link org.apache.dubbo.config.context.ConfigManager#addMetadataReport(MetadataReportConfig)}
+     * @deprecated Use {@link org.apache.dubbo.config.context.ConfigManager#addConfig(AbstractConfig)}
      */
     @Deprecated
     public void setMetadataReportConfig(MetadataReportConfig metadataReportConfig) {
         this.metadataReportConfig = metadataReportConfig;
         if (metadataReportConfig != null) {
-            getConfigManager().addMetadataReport(metadataReportConfig);
+            getConfigManager().addConfig(metadataReportConfig);
         }
     }
 
@@ -899,7 +900,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public SslConfig getSslConfig() {
-        return getConfigManager().getSsl().orElse(null);
+        return getConfigManager().findConfig(SslConfig.class).orElse(null);
     }
 
     public Boolean getSingleton() {

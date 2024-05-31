@@ -113,7 +113,7 @@ public class InternalServiceConfigBuilder<T> {
         // <dubbo:protocol/>
         if (StringUtils.isEmpty(protocol)) {
             Collection<ProtocolConfig> protocols =
-                    applicationModel.getApplicationConfigManager().getProtocols();
+                    applicationModel.getApplicationConfigManager().getRepeatableConfigs(ProtocolConfig.class);
             if (CollectionUtils.isNotEmpty(protocols)) {
                 protocol = protocols.stream()
                         .map(ProtocolConfig::getName)
@@ -252,7 +252,7 @@ public class InternalServiceConfigBuilder<T> {
     private ProtocolConfig getProtocolConfig() {
         return applicationModel
                 .getApplicationConfigManager()
-                .getProtocol(protocol)
+                .findConfig(ProtocolConfig.class, protocol)
                 .orElse(null);
     }
 
@@ -268,7 +268,7 @@ public class InternalServiceConfigBuilder<T> {
 
         applicationModel
                 .getApplicationConfigManager()
-                .getProtocol(this.protocol)
+                .findConfig(ProtocolConfig.class, this.protocol)
                 .ifPresent(p -> {
                     protocolConfig.mergeProtocol(p);
                     // clear extra protocols possibly merged from global ProtocolConfig

@@ -17,6 +17,7 @@
 package org.apache.dubbo.metrics.registry.collector;
 
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metrics.collector.CombMetricsCollector;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
@@ -76,7 +77,9 @@ public class NettyMetricsCollector extends CombMetricsCollector<NettyEvent> {
     public boolean isCollectEnabled() {
         if (collectEnabled == null) {
             ConfigManager configManager = applicationModel.getApplicationConfigManager();
-            configManager.getMetrics().ifPresent(metricsConfig -> setCollectEnabled(metricsConfig.getEnableNetty()));
+            configManager
+                    .findConfig(MetricsConfig.class)
+                    .ifPresent(metricsConfig -> setCollectEnabled(metricsConfig.getEnableNetty()));
         }
         return Optional.ofNullable(collectEnabled).orElse(true);
     }

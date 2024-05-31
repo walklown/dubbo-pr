@@ -94,40 +94,40 @@ public class GetConfig implements BaseCommand {
             ApplicationModel applicationModel,
             Map<String, Object> applicationMap,
             ConfigManager configManager) {
-        Optional<ApplicationConfig> applicationConfig = configManager.getApplication();
+        Optional<ApplicationConfig> applicationConfig = configManager.findConfig(ApplicationConfig.class);
         applicationConfig.ifPresent(config ->
                 appendConfig("ApplicationConfig", config.getName(), config, plainOutput, applicationMap, args));
 
-        for (ProtocolConfig protocol : configManager.getProtocols()) {
+        for (ProtocolConfig protocol : configManager.getRepeatableConfigs(ProtocolConfig.class)) {
             appendConfigs("ProtocolConfig", protocol.getName(), protocol, plainOutput, applicationMap, args);
         }
 
-        for (RegistryConfig registry : configManager.getRegistries()) {
+        for (RegistryConfig registry : configManager.getRepeatableConfigs(RegistryConfig.class)) {
             appendConfigs("RegistryConfig", registry.getId(), registry, plainOutput, applicationMap, args);
         }
 
-        for (MetadataReportConfig metadataConfig : configManager.getMetadataConfigs()) {
+        for (MetadataReportConfig metadataConfig : configManager.getRepeatableConfigs(MetadataReportConfig.class)) {
             appendConfigs(
                     "MetadataReportConfig", metadataConfig.getId(), metadataConfig, plainOutput, applicationMap, args);
         }
 
-        for (ConfigCenterConfig configCenter : configManager.getConfigCenters()) {
+        for (ConfigCenterConfig configCenter : configManager.getRepeatableConfigs(ConfigCenterConfig.class)) {
             appendConfigs("ConfigCenterConfig", configCenter.getId(), configCenter, plainOutput, applicationMap, args);
         }
 
-        Optional<MetricsConfig> metricsConfig = configManager.getMetrics();
+        Optional<MetricsConfig> metricsConfig = configManager.findConfig(MetricsConfig.class);
         metricsConfig.ifPresent(
                 config -> appendConfig("MetricsConfig", config.getId(), config, plainOutput, applicationMap, args));
 
-        Optional<TracingConfig> tracingConfig = configManager.getTracing();
+        Optional<TracingConfig> tracingConfig = configManager.findConfig(TracingConfig.class);
         tracingConfig.ifPresent(
                 config -> appendConfig("TracingConfig", config.getId(), config, plainOutput, applicationMap, args));
 
-        Optional<MonitorConfig> monitorConfig = configManager.getMonitor();
+        Optional<MonitorConfig> monitorConfig = configManager.findConfig(MonitorConfig.class);
         monitorConfig.ifPresent(
                 config -> appendConfig("MonitorConfig", config.getId(), config, plainOutput, applicationMap, args));
 
-        Optional<SslConfig> sslConfig = configManager.getSsl();
+        Optional<SslConfig> sslConfig = configManager.findConfig(SslConfig.class);
         sslConfig.ifPresent(
                 config -> appendConfig("SslConfig", config.getId(), config, plainOutput, applicationMap, args));
 

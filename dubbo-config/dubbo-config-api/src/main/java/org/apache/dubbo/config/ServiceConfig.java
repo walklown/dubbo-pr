@@ -417,7 +417,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 || CollectionUtils.isNotEmpty(getScopeModel()
                         .getApplicationModel()
                         .getApplicationConfigManager()
-                        .getRegistries());
+                        .getRepeatableConfigs(RegistryConfig.class));
     }
 
     protected void mapServiceName(

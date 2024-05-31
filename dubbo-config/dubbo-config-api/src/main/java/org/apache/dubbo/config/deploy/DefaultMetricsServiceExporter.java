@@ -52,7 +52,7 @@ public class DefaultMetricsServiceExporter implements MetricsServiceExporter, Sc
 
     private void initialize() {
         MetricsConfig metricsConfig =
-                applicationModel.getApplicationConfigManager().getMetrics().orElse(null);
+                applicationModel.getApplicationConfigManager().getConfig(MetricsConfig.class);
         // TODO compatible with old usage of metrics, remove protocol check after new metrics is ready for use.
         if (metricsConfig != null && metricsService == null) {
             String protocol = Optional.ofNullable(metricsConfig.getProtocol()).orElse(PROTOCOL_PROMETHEUS);
@@ -130,7 +130,7 @@ public class DefaultMetricsServiceExporter implements MetricsServiceExporter, Sc
 
     private MetricsConfig getMetricsConfig() {
         Optional<MetricsConfig> metricsConfig =
-                applicationModel.getApplicationConfigManager().getMetrics();
+                applicationModel.getApplicationConfigManager().findConfig(MetricsConfig.class);
         if (metricsConfig.isPresent()) {
             return metricsConfig.get();
         } else {

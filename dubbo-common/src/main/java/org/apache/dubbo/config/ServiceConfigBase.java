@@ -237,7 +237,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     protected void convertProtocolIdsToProtocols() {
         if (StringUtils.isEmpty(protocolIds)) {
             if (CollectionUtils.isEmpty(protocols)) {
-                List<ProtocolConfig> protocolConfigs = getConfigManager().getDefaultProtocols();
+                List<ProtocolConfig> protocolConfigs = getConfigManager().getDefaultConfigs(ProtocolConfig.class);
                 if (protocolConfigs.isEmpty()) {
                     throw new IllegalStateException("The default protocol has not been initialized.");
                 }
@@ -248,7 +248,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
             Set<String> idsSet = new LinkedHashSet<>(Arrays.asList(idsArray));
             List<ProtocolConfig> tmpProtocols = new ArrayList<>();
             for (String id : idsSet) {
-                Optional<ProtocolConfig> globalProtocol = getConfigManager().getProtocol(id);
+                Optional<ProtocolConfig> globalProtocol = getConfigManager().findConfig(ProtocolConfig.class, id);
                 if (globalProtocol.isPresent()) {
                     tmpProtocols.add(globalProtocol.get());
                 } else {

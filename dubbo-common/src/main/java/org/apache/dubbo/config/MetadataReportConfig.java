@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.annotation.DubboProperties;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -43,7 +44,8 @@ import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
  *
  * @export
  */
-public class MetadataReportConfig extends AbstractConfig {
+@DubboProperties(configScope = ConfigScope.APPLICATION, repeatable = true)
+public class MetadataReportConfig extends AbstractConfig implements DubboApplicationConfig {
 
     private static final long serialVersionUID = 55233L;
 

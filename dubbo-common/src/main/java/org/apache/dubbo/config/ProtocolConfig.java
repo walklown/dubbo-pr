@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.serialization.PreferSerializationProvider;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.annotation.DubboProperties;
 import org.apache.dubbo.config.nested.TripleConfig;
 import org.apache.dubbo.config.support.Nested;
 import org.apache.dubbo.config.support.Parameter;
@@ -39,7 +40,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXP
  *
  * @export
  */
-public class ProtocolConfig extends AbstractConfig {
+@DubboProperties(configScope = ConfigScope.APPLICATION, required = true, repeatable = true)
+public class ProtocolConfig extends AbstractConfig implements DubboApplicationConfig {
 
     private static final long serialVersionUID = 6913423882496634749L;
 

@@ -191,7 +191,7 @@ public interface ExecutorRepository {
 
     static String getMode(ApplicationModel applicationModel) {
         Optional<ApplicationConfig> optional =
-                applicationModel.getApplicationConfigManager().getApplication();
+                applicationModel.getApplicationConfigManager().findConfig(ApplicationConfig.class);
         return optional.map(ApplicationConfig::getExecutorManagementMode).orElse(EXECUTOR_MANAGEMENT_MODE_ISOLATION);
     }
 }

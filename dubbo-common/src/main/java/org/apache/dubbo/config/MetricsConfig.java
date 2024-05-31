@@ -18,6 +18,7 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.config.annotation.DubboProperties;
 import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.config.nested.HistogramConfig;
 import org.apache.dubbo.config.nested.PrometheusConfig;
@@ -30,7 +31,8 @@ import java.util.Map;
 /**
  * Configuration for the metrics.
  */
-public class MetricsConfig extends AbstractConfig {
+@DubboProperties(configScope = ConfigScope.APPLICATION)
+public class MetricsConfig extends AbstractConfig implements DubboApplicationConfig {
 
     private static final long serialVersionUID = -9089919311611546383L;
 

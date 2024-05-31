@@ -17,6 +17,7 @@
 package org.apache.dubbo.metrics.config.collector;
 
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metrics.collector.CombMetricsCollector;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
@@ -66,7 +67,9 @@ public class ConfigCenterMetricsCollector extends CombMetricsCollector<ConfigCen
     public boolean isCollectEnabled() {
         if (collectEnabled == null) {
             ConfigManager configManager = applicationModel.getApplicationConfigManager();
-            configManager.getMetrics().ifPresent(metricsConfig -> setCollectEnabled(metricsConfig.getEnableMetadata()));
+            configManager
+                    .findConfig(MetricsConfig.class)
+                    .ifPresent(metricsConfig -> setCollectEnabled(metricsConfig.getEnableMetadata()));
         }
         return Optional.ofNullable(collectEnabled).orElse(true);
     }

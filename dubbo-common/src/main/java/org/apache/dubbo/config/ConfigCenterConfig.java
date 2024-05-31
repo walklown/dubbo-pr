@@ -21,6 +21,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.config.annotation.DubboProperties;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -41,7 +42,8 @@ import static org.apache.dubbo.config.Constants.ZOOKEEPER_PROTOCOL;
 /**
  * Configuration for the config center.
  */
-public class ConfigCenterConfig extends AbstractConfig {
+@DubboProperties(configScope = ConfigScope.APPLICATION, required = true, repeatable = true)
+public class ConfigCenterConfig extends AbstractConfig implements DubboApplicationConfig {
 
     private final AtomicBoolean initialized = new AtomicBoolean(false);
 

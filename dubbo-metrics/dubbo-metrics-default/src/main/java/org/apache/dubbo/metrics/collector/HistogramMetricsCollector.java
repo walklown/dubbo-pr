@@ -55,7 +55,7 @@ public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEv
         this.applicationModel = applicationModel;
 
         ConfigManager configManager = applicationModel.getApplicationConfigManager();
-        MetricsConfig config = configManager.getMetrics().orElse(null);
+        MetricsConfig config = configManager.findConfig(MetricsConfig.class).orElse(null);
         if (config == null
                 || config.getHistogram() == null
                 || config.getHistogram().getEnabled() == null

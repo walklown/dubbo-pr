@@ -26,6 +26,8 @@ import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.ConfigKeys;
+import org.apache.dubbo.config.ConfigScope;
+import org.apache.dubbo.config.DubboApplicationConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.MonitorConfig;
@@ -33,17 +35,19 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.config.TracingConfig;
+import org.apache.dubbo.config.annotation.DubboProperties;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
-import static org.apache.dubbo.config.AbstractConfig.getTagName;
 
 /**
  * A lock-free config manager (through ConcurrentHashMap), for fast read operation.
@@ -58,18 +62,7 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
     public static final String DUBBO_CONFIG_MODE = ConfigKeys.DUBBO_CONFIG_MODE;
 
     public ConfigManager(ApplicationModel applicationModel) {
-        super(
-                applicationModel,
-                Arrays.asList(
-                        ApplicationConfig.class,
-                        MonitorConfig.class,
-                        MetricsConfig.class,
-                        SslConfig.class,
-                        ProtocolConfig.class,
-                        RegistryConfig.class,
-                        ConfigCenterConfig.class,
-                        MetadataReportConfig.class,
-                        TracingConfig.class));
+        super(applicationModel, ConfigScope.APPLICATION);
     }
 
     // ApplicationConfig correlative methods
@@ -79,131 +72,216 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
      *
      * @param application
      * @return current application config instance
+     * @deprecated {@link ConfigManager#addConfig(AbstractConfig)}
      */
+    @Deprecated
     @DisableInject
     public void setApplication(ApplicationConfig application) {
         addConfig(application);
     }
 
+    /**
+     * @deprecated {@link ConfigManager#getConfig(Class)}
+     */
+    @Deprecated
     public Optional<ApplicationConfig> getApplication() {
-        return ofNullable(getSingleConfig(getTagName(ApplicationConfig.class)));
+        return findConfig(ApplicationConfig.class);
     }
 
     public ApplicationConfig getApplicationOrElseThrow() {
-        return getApplication().orElseThrow(() -> new IllegalStateException("There's no ApplicationConfig specified."));
+        Optional<ApplicationConfig> optional = ofNullable(getConfig(ApplicationConfig.class));
+        return optional.orElseThrow(() -> new IllegalStateException("There's no ApplicationConfig specified."));
     }
 
     // MonitorConfig correlative methods
 
+    /**
+     * @deprecated {@link ConfigManager#addConfig(AbstractConfig)}
+     */
+    @Deprecated
     @DisableInject
     public void setMonitor(MonitorConfig monitor) {
         addConfig(monitor);
     }
 
+    /**
+     * @deprecated {@link ConfigManager#getConfig(Class)}
+     */
+    @Deprecated
     public Optional<MonitorConfig> getMonitor() {
-        return ofNullable(getSingleConfig(getTagName(MonitorConfig.class)));
+        return findConfig(MonitorConfig.class);
     }
 
+    /**
+     * @deprecated {@link ConfigManager#addConfig(AbstractConfig)}
+     */
+    @Deprecated
     @DisableInject
     public void setMetrics(MetricsConfig metrics) {
         addConfig(metrics);
     }
 
+    /**
+     * @deprecated {@link ConfigManager#getConfig(Class)}
+     */
+    @Deprecated
     public Optional<MetricsConfig> getMetrics() {
-        return ofNullable(getSingleConfig(getTagName(MetricsConfig.class)));
+        return findConfig(MetricsConfig.class);
     }
 
+    /**
+     * @deprecated {@link ConfigManager#addConfig(AbstractConfig)}
+     */
+    @Deprecated
     @DisableInject
     public void setTracing(TracingConfig tracing) {
         addConfig(tracing);
     }
 
+    /**
+     * @deprecated {@link ConfigManager#getConfig(Class)}
+     */
+    @Deprecated
     public Optional<TracingConfig> getTracing() {
-        return ofNullable(getSingleConfig(getTagName(TracingConfig.class)));
+        return findConfig(TracingConfig.class);
     }
 
+    /**
+     * @deprecated {@link ConfigManager#addConfig(AbstractConfig)}
+     */
+    @Deprecated
     @DisableInject
     public void setSsl(SslConfig sslConfig) {
         addConfig(sslConfig);
     }
 
+    /**
+     * @deprecated {@link ConfigManager#getConfig(Class)}
+     */
+    @Deprecated
     public Optional<SslConfig> getSsl() {
-        return ofNullable(getSingleConfig(getTagName(SslConfig.class)));
+        return findConfig(SslConfig.class);
     }
 
     // ConfigCenterConfig correlative methods
 
+    /**
+     * @deprecated {@link ConfigManager#addConfig(AbstractConfig)}
+     */
+    @Deprecated
     public void addConfigCenter(ConfigCenterConfig configCenter) {
         addConfig(configCenter);
     }
 
+    /**
+     * @deprecated {@link ConfigManager#addConfigs(Iterable)}
+     */
+    @Deprecated
     public void addConfigCenters(Iterable<ConfigCenterConfig> configCenters) {
-        configCenters.forEach(this::addConfigCenter);
+        addConfigs(configCenters);
     }
 
+    /**
+     * @deprecated {@link ConfigManager#getDefaultConfigs(Class)}
+     */
+    @Deprecated
     public Optional<Collection<ConfigCenterConfig>> getDefaultConfigCenter() {
-        Collection<ConfigCenterConfig> defaults =
-                getDefaultConfigs(getConfigsMap(getTagName(ConfigCenterConfig.class)));
+        Collection<ConfigCenterConfig> defaults = getDefaultConfigs(ConfigCenterConfig.class);
         if (CollectionUtils.isEmpty(defaults)) {
-            defaults = getConfigCenters();
+            defaults = getRepeatableConfigs(ConfigCenterConfig.class);
         }
         return Optional.ofNullable(defaults);
     }
 
+    /**
+     * @deprecated {@link ConfigManager#getConfig(Class, String)}
+     */
+    @Deprecated
     public Optional<ConfigCenterConfig> getConfigCenter(String id) {
-        return getConfig(ConfigCenterConfig.class, id);
+        return findConfig(ConfigCenterConfig.class, id);
     }
 
+    /**
+     * @deprecated {@link ConfigManager#getRepeatableConfigs(Class)}
+     */
+    @Deprecated
     public Collection<ConfigCenterConfig> getConfigCenters() {
-        return getConfigs(getTagName(ConfigCenterConfig.class));
+        return getRepeatableConfigs(ConfigCenterConfig.class);
     }
 
     // MetadataReportConfig correlative methods
 
+    /**
+     * @deprecated {@link ConfigManager#addConfig(AbstractConfig)}
+     */
+    @Deprecated
     public void addMetadataReport(MetadataReportConfig metadataReportConfig) {
         addConfig(metadataReportConfig);
     }
 
+    /**
+     * @deprecated {@link ConfigManager#addConfigs(Iterable)}
+     */
+    @Deprecated
     public void addMetadataReports(Iterable<MetadataReportConfig> metadataReportConfigs) {
-        metadataReportConfigs.forEach(this::addMetadataReport);
+        metadataReportConfigs.forEach(this::addConfig);
     }
 
+    /**
+     * @deprecated {@link ConfigManager#getRepeatableConfigs(Class)}
+     */
+    @Deprecated
     public Collection<MetadataReportConfig> getMetadataConfigs() {
-        return getConfigs(getTagName(MetadataReportConfig.class));
+        return getRepeatableConfigs(MetadataReportConfig.class);
     }
 
+    /**
+     * @deprecated {@link ConfigManager#getDefaultConfigs(Class)}
+     */
+    @Deprecated
     public Collection<MetadataReportConfig> getDefaultMetadataConfigs() {
-        Collection<MetadataReportConfig> defaults =
-                getDefaultConfigs(getConfigsMap(getTagName(MetadataReportConfig.class)));
+        Collection<MetadataReportConfig> defaults = getDefaultConfigs(MetadataReportConfig.class);
         if (CollectionUtils.isEmpty(defaults)) {
-            return getMetadataConfigs();
+            return getRepeatableConfigs(MetadataReportConfig.class);
         }
         return defaults;
     }
 
     // ProtocolConfig correlative methods
 
+    /**
+     * @deprecated {@link ConfigManager#addConfig(AbstractConfig)}
+     */
+    @Deprecated
     public void addProtocol(ProtocolConfig protocolConfig) {
         addConfig(protocolConfig);
     }
 
+    /**
+     * @deprecated {@link ConfigManager#addConfigs(Iterable)}
+     */
+    @Deprecated
     public void addProtocols(Iterable<ProtocolConfig> protocolConfigs) {
         if (protocolConfigs != null) {
-            protocolConfigs.forEach(this::addProtocol);
+            protocolConfigs.forEach(this::addConfig);
         }
     }
 
+    /**
+     * @deprecated {@link ConfigManager#getConfig(Class, String)}
+     */
+    @Deprecated
     public Optional<ProtocolConfig> getProtocol(String idOrName) {
-        return getConfig(ProtocolConfig.class, idOrName);
+        return findConfig(ProtocolConfig.class, idOrName);
     }
 
     public ProtocolConfig getOrAddProtocol(String idOrName) {
-        Optional<ProtocolConfig> protocol = getProtocol(idOrName);
+        Optional<ProtocolConfig> protocol = findConfig(ProtocolConfig.class, idOrName);
         if (protocol.isPresent()) {
             return protocol.get();
         }
         ProtocolConfig protocolConfig = new ProtocolConfig(idOrName);
-        addProtocol(protocolConfig);
+        addConfig(protocolConfig);
         // addProtocol triggers refresh when other protocols exist in the ConfigManager.
         // So refresh is only done when ProtocolConfig is not refreshed.
         if (!protocolConfig.isRefreshed()) {
@@ -212,89 +290,92 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
         return protocolConfig;
     }
 
+    /**
+     * @deprecated {@link ConfigManager#getDefaultConfigs(Class)}
+     */
+    @Deprecated
     public List<ProtocolConfig> getDefaultProtocols() {
         return getDefaultConfigs(ProtocolConfig.class);
     }
 
-    @Override
-    public <C extends AbstractConfig> List<C> getDefaultConfigs(Class<C> cls) {
-        return getDefaultConfigs(getConfigsMap(getTagName(cls)));
-    }
-
+    /**
+     * @deprecated {@link ConfigManager#getRepeatableConfigs(Class)}
+     */
+    @Deprecated
     public Collection<ProtocolConfig> getProtocols() {
-        return getConfigs(getTagName(ProtocolConfig.class));
+        return getRepeatableConfigs(ProtocolConfig.class);
     }
 
     // RegistryConfig correlative methods
 
+    /**
+     * @deprecated {@link ConfigManager#addConfig(AbstractConfig)}
+     */
+    @Deprecated
     public void addRegistry(RegistryConfig registryConfig) {
         addConfig(registryConfig);
     }
 
+    /**
+     * @deprecated {@link ConfigManager#addConfigs(Iterable)}
+     */
+    @Deprecated
     public void addRegistries(Iterable<RegistryConfig> registryConfigs) {
         if (registryConfigs != null) {
-            registryConfigs.forEach(this::addRegistry);
+            registryConfigs.forEach(this::addConfig);
         }
     }
 
+    /**
+     * @deprecated {@link ConfigManager#getConfig(Class, String)}
+     */
+    @Deprecated
     public Optional<RegistryConfig> getRegistry(String id) {
-        return getConfig(RegistryConfig.class, id);
+        return findConfig(RegistryConfig.class, id);
     }
 
+    /**
+     * @deprecated {@link ConfigManager#getDefaultConfigs(Class)}
+     */
+    @Deprecated
     public List<RegistryConfig> getDefaultRegistries() {
-        return getDefaultConfigs(getConfigsMap(getTagName(RegistryConfig.class)));
+        return getDefaultConfigs(RegistryConfig.class);
     }
 
+    /**
+     * @deprecated {@link ConfigManager#getRepeatableConfigs(Class)}
+     */
+    @Deprecated
     public Collection<RegistryConfig> getRegistries() {
-        return getConfigs(getTagName(RegistryConfig.class));
-    }
-
-    @Override
-    public void refreshAll() {
-        // refresh all configs here
-        getApplication().ifPresent(ApplicationConfig::refresh);
-        getMonitor().ifPresent(MonitorConfig::refresh);
-        getMetrics().ifPresent(MetricsConfig::refresh);
-        getTracing().ifPresent(TracingConfig::refresh);
-        getSsl().ifPresent(SslConfig::refresh);
-
-        getProtocols().forEach(ProtocolConfig::refresh);
-        getRegistries().forEach(RegistryConfig::refresh);
-        getConfigCenters().forEach(ConfigCenterConfig::refresh);
-        getMetadataConfigs().forEach(MetadataReportConfig::refresh);
+        return getRepeatableConfigs(RegistryConfig.class);
     }
 
     @Override
     public void loadConfigs() {
         // application config has load before starting config center
-        // load dubbo.applications.xxx
-        loadConfigsOfTypeFromProps(ApplicationConfig.class);
-
-        // load dubbo.monitors.xxx
-        loadConfigsOfTypeFromProps(MonitorConfig.class);
-
-        // load dubbo.metrics.xxx
-        loadConfigsOfTypeFromProps(MetricsConfig.class);
-
-        // load dubbo.tracing.xxx
-        loadConfigsOfTypeFromProps(TracingConfig.class);
-
-        // load multiple config types:
-        // load dubbo.protocols.xxx
-        loadConfigsOfTypeFromProps(ProtocolConfig.class);
-
-        // load dubbo.registries.xxx
-        loadConfigsOfTypeFromProps(RegistryConfig.class);
-
-        // load dubbo.metadata-report.xxx
-        loadConfigsOfTypeFromProps(MetadataReportConfig.class);
-
-        // config centers has bean loaded before starting config center
-        // loadConfigsOfTypeFromProps(ConfigCenterConfig.class);
+        Map<String, Class<?>> dubboConfigClasses = applicationModel
+                .getExtensionLoader(DubboApplicationConfig.class)
+                .getExtensionClasses();
+        List<Class<? extends AbstractConfig>> dubboApplicationConfigClasses = new LinkedList<>();
+        for (Class<?> configType : dubboConfigClasses.values()) {
+            if (ConfigCenterConfig.class.equals(configType)) {
+                // config centers has bean loaded before starting config center
+                continue;
+            }
+            DubboProperties dubboProperties = configType.getAnnotation(DubboProperties.class);
+            if (dubboProperties == null) {
+                throw new IllegalArgumentException("Miss DubboProperties on config type: " + configType);
+            }
+            if (!ConfigScope.APPLICATION.equals(dubboProperties.configScope())) {
+                continue;
+            }
+            dubboApplicationConfigClasses.add((Class<? extends AbstractConfig>) configType);
+            loadConfigsOfTypeFromProps((Class<? extends AbstractConfig>) configType);
+        }
 
         refreshAll();
 
-        checkConfigs();
+        checkConfigs(dubboApplicationConfigClasses);
 
         // set model name
         if (StringUtils.isBlank(applicationModel.getModelName())) {
@@ -302,16 +383,11 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
         }
     }
 
-    private void checkConfigs() {
+    private void checkConfigs(List<Class<? extends AbstractConfig>> dubboApplicationConfigClasses) {
         // check config types (ignore metadata-center)
-        List<Class<? extends AbstractConfig>> multipleConfigTypes = Arrays.asList(
-                ApplicationConfig.class,
-                ProtocolConfig.class,
-                RegistryConfig.class,
-                MonitorConfig.class,
-                MetricsConfig.class,
-                TracingConfig.class,
-                SslConfig.class);
+        List<Class<? extends AbstractConfig>> multipleConfigTypes = dubboApplicationConfigClasses.stream()
+                .filter(configType -> !MetadataReportConfig.class.equals(configType))
+                .collect(Collectors.toList());
 
         for (Class<? extends AbstractConfig> configType : multipleConfigTypes) {
             checkDefaultAndValidateConfigs(configType);
@@ -319,7 +395,7 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
 
         // check port conflicts
         Map<Integer, ProtocolConfig> protocolPortMap = new LinkedHashMap<>();
-        for (ProtocolConfig protocol : this.getProtocols()) {
+        for (ProtocolConfig protocol : this.getRepeatableConfigs(ProtocolConfig.class)) {
             Integer port = protocol.getPort();
             if (port == null || port == -1) {
                 continue;
@@ -335,7 +411,7 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
         // Log the current configurations.
         logger.info("The current configurations or effective configurations are as follows:");
         for (Class<? extends AbstractConfig> configType : multipleConfigTypes) {
-            getConfigs(configType).forEach((config) -> logger.info(config.toString()));
+            getRepeatableConfigs(configType).forEach((config) -> logger.info(config.toString()));
         }
     }
 
