@@ -148,7 +148,7 @@ public class ReferenceCreator {
         // 1. find in ModuleConfigManager
         T config = moduleModel
                 .getConfigManager()
-                .getConfig(configType, configIdOrName)
+                .findConfig(configType, configIdOrName)
                 .orElse(null);
         if (config == null) {
             // 2. find in Spring ApplicationContext
