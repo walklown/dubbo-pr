@@ -58,7 +58,7 @@ class MetadataReportInstanceTest {
         when(metadataReportConfig.getScopeModel()).thenReturn(applicationModel);
         when(metadataReportConfig.getRegistry()).thenReturn(registryId);
 
-        when(configManager.getMetadataConfigs()).thenReturn(Collections.emptyList());
+        when(configManager.getRepeatableConfigs(MetadataReportConfig.class)).thenReturn(Collections.emptyList());
         when(applicationModel.getApplicationConfigManager()).thenReturn(configManager);
         when(applicationModel.getApplicationConfigManager().getApplicationOrElseThrow())
                 .thenReturn(new ApplicationConfig("test"));

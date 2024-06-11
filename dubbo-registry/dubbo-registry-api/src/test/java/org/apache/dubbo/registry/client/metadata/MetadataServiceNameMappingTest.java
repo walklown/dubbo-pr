@@ -76,7 +76,7 @@ class MetadataServiceNameMappingTest {
     void testMap() {
         ApplicationModel mockedApplicationModel = spy(applicationModel);
 
-        when(configManager.getMetadataConfigs()).thenReturn(Collections.emptyList());
+        when(configManager.getRepeatableConfigs(MetadataReportConfig.class)).thenReturn(Collections.emptyList());
         Mockito.when(mockedApplicationModel.getApplicationConfigManager()).thenReturn(configManager);
         Mockito.when(mockedApplicationModel.getCurrentConfig()).thenReturn(new ApplicationConfig("test"));
 
@@ -85,7 +85,8 @@ class MetadataServiceNameMappingTest {
         boolean result = mapping.map(url);
         assertFalse(result);
 
-        when(configManager.getMetadataConfigs()).thenReturn(Arrays.asList(new MetadataReportConfig()));
+        when(configManager.getRepeatableConfigs(MetadataReportConfig.class))
+                .thenReturn(Arrays.asList(new MetadataReportConfig()));
         MetadataReportInstance reportInstance = mock(MetadataReportInstance.class);
         Mockito.when(reportInstance.getMetadataReports(true)).thenReturn(metadataReportList);
         mapping.metadataReportInstance = reportInstance;

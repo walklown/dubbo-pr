@@ -339,7 +339,7 @@ public class RegistryMetricsTest {
         when(metricsConfig.getAggregation()).thenReturn(new AggregationConfig());
         when(applicationModel.getApplicationConfigManager()).thenReturn(configManager);
         when(applicationModel.NotExistApplicationConfig()).thenReturn(false);
-        when(configManager.getApplication()).thenReturn(Optional.of(applicationConfig));
+        when(configManager.findConfig(ApplicationConfig.class)).thenReturn(Optional.of(applicationConfig));
 
         return new RegistryMetricsCollector(applicationModel);
     }
